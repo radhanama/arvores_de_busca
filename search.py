@@ -227,7 +227,7 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     node = getStartNode(problem)
-    
+
     def fn_total_cost_for_node(a_node):
         return a_node['PATH-COST'] + heuristic(a_node['STATE'], problem=problem)
 

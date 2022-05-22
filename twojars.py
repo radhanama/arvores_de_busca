@@ -122,8 +122,8 @@ class TwoJarsState:
           True
         """
         "*** YOUR CODE"
-        if self.jars[0] == other.jars[1] and self.jars[1] == other.jars[0]:
-            return True
+        # if self.jars[0] == other.jars[1] and self.jars[1] == other.jars[0]:
+        #     return True
         if self.jars[0] == other.jars[0] and self.jars[1] == other.jars[1]:
             return True
         return False
