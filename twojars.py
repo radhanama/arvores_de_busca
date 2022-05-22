@@ -63,22 +63,21 @@ class TwoJarsState:
         """
         "*** YOUR CODE"
         moves = []
-        x, y = self.jars
-        if y>0:
+        j4, j3 = self.jars
+        if j3 != 0:
             moves.append('emptyJ3')
-            if x+y <= 4:
+            if j4 < 4:
                 moves.append('pourJ3intoJ4')
-        if y<3:
-             moves.append('fillJ3')
-            
-        if x>0:
+        if j3 < 3:
+            moves.append('fillJ3')
+
+        if j4 > 0:
             moves.append('emptyJ4')
-            if x+y <= 3:
+            if j3 < 3:
                 moves.append('pourJ4intoJ3')
-        if y<3:
-             moves.append('fillJ4')
+        if j4 < 4:
+            moves.append('fillJ4')
         return moves
-        
 
     def result(self, move):
         """
@@ -92,8 +91,25 @@ class TwoJarsState:
         it returns a new object.
         """
         "*** YOUR CODE HERE ***"
-        
-        return self
+        novo = TwoJarsState(self.jars)
+        x, y = novo.jars
+        if move == "fillJ4":
+            novo.jars = (4, y)
+        elif move == "fillJ3":
+            novo.jars = (x, 3)
+        elif move == "emptyJ4":
+            novo.jars = (0, y)
+        elif move == "emptyJ3":
+            novo.jars = (x, 0)
+        elif move == "pourJ3intoJ4" and x+y <= 4:
+            novo.jars = (x+y, 0)
+        elif move == "pourJ4intoJ3" and x+y <= 3:
+            novo.jars = (0, y+x)
+        elif move == "pourJ4intoJ3" and y < 3:
+            novo.jars = (x+y-4, 3)
+        elif move == "pourJ3intoJ4" and x < 4:
+            novo.jars = (4, x+y-3)
+        return novo
 
     # Utilities for comparison and display
     def __eq__(self, other):
@@ -105,8 +121,12 @@ class TwoJarsState:
               TwoJarsState((1, 0)).result('left')
           True
         """
-        "*** YOUR CODE HERE ***"
-        return True
+        "*** YOUR CODE"
+        if self.jars[0] == other.jars[1] and self.jars[1] == other.jars[0]:
+            return True
+        if self.jars[0] == other.jars[0] and self.jars[1] == other.jars[1]:
+            return True
+        return False
 
     def __hash__(self):
         return hash(str(self.jars))
