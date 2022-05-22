@@ -502,9 +502,6 @@ class FoodSearchProblem:
     def isGoalState(self, state):
         return state[1].count() == 0
 
-    def getGameState(self):
-        return self.startingGameState
-
     def expand(self, state):
         "Returns child states, the actions they require, and a cost of 1."
         children = []
@@ -601,9 +598,6 @@ def foodHeuristic(state, problem):
     
     if len(foodList) == 0:
         return 0
-    
-    if len(foodList) == 0:
-        return None
 
     closestFood = foodList[0]
     closestCost = manhatan(position, closestFood)
@@ -612,9 +606,6 @@ def foodHeuristic(state, problem):
         if thisCost < closestCost:
             closestCost = thisCost
             closestFood = candidate
-
-    if len(foodList) == 0:
-        return None
 
     farthestFood = foodList[0]
     farthestCost = manhatan(position, farthestFood)
@@ -627,35 +618,21 @@ def foodHeuristic(state, problem):
     heuristic = manhatan(closestFood, position)
     heuristic = heuristic + manhatan(farthestFood, closestFood)
 
-    gameState = problem.getGameState()
+    gameState = problem.startingGameState
     d1 = mazeDistance(closestFood, position, gameState)
-    
+
     leftPoints = 0
     for (x,y) in foodList:
-        flag = 0
-        if x!=farthestFood[0] and x!=closestFood[0]:
-            leftPoints = leftPoints + 1
-            flag = 1
-        
-        if flag == 0:
-            if y!=farthestFood[1] and y!=closestFood[1]:
-                leftPoints = leftPoints + 1
-
-    leftPoints2 = 0
-    for (x,y) in foodList:
-        flag = 0
         if x!=position[0] and x!=closestFood[0]:
-            leftPoints2 = leftPoints2 + 1
-            flag = 1
-        
-        if flag == 0:
+            leftPoints = leftPoints + 1
+        else:
             if y!=position[1] and y!=closestFood[1]:
-                leftPoints2 = leftPoints2 + 1
+                leftPoints = leftPoints + 1
     
-    return d1 + leftPoints2
+    return d1 + leftPoints
 
-def manhatan (pointA, pointB):
-    return abs(pointA[0] - pointB[0]) + abs(pointA[1] - pointB[1])
+def manhatan (first, second):
+    return abs(first[0] - second[0]) + abs(first[1] - second[1])
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"

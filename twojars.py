@@ -92,7 +92,8 @@ class TwoJarsState:
         it returns a new object.
         """
         "*** YOUR CODE HERE ***"
-        return self.jars
+        
+        return self
 
     # Utilities for comparison and display
     def __eq__(self, other):
