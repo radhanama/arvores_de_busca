@@ -40,6 +40,7 @@ from game import Actions
 import util
 import time
 import search
+import functools
 
 
 class GoWestAgent(Agent):
@@ -333,6 +334,9 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        self.game_state = startingGameState
+
+        self.startState = (self.startingPosition, self.corners)
 
     def getStartState(self):
         """
@@ -340,14 +344,18 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.startState
 
     def isGoalState(self, state):
         """
+        -: Função teste de objetivo.
+
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        pacman_position, uncolleted_corners = state
+        return len(uncolleted_corners) == 1 and pacman_position == uncolleted_corners[0]
 
     def expand(self, state):
         """
@@ -365,11 +373,18 @@ class CornersProblem(search.SearchProblem):
             # Add a child state to the child list if the action is legal
             # You should call getActions, getActionCost, and getNextState.
             "*** YOUR CODE HERE ***"
+            nextState = self.getNextState(state, action)
+            cost = self.getActionCost(state, action, nextState)
+            children.append((nextState, action, cost))
+            # print((nextState, action, cost))
 
         self._expanded += 1  # DO NOT CHANGE
         return children
 
     def getActions(self, state):
+        """
+        -: Função **ACTIONS(s)** que produz as ações possíveis em cada estado.
+        """
         possible_directions = [Directions.NORTH,
                                Directions.SOUTH, Directions.EAST, Directions.WEST]
         valid_actions_from_state = []
@@ -379,6 +394,7 @@ class CornersProblem(search.SearchProblem):
             nextx, nexty = int(x + dx), int(y + dy)
             if not self.walls[nextx][nexty]:
                 valid_actions_from_state.append(action)
+
         return valid_actions_from_state
 
     def getActionCost(self, state, action, next_state):
@@ -387,18 +403,31 @@ class CornersProblem(search.SearchProblem):
         return 1
 
     def getNextState(self, state, action):
+        """
+        -: Função **RESULT(s,a)** chamada de *modelo de transição ou
+           função de transição*, que retorna o próximo estado dado
+           como parametro um *estado e uma ação*.
+        """
         assert action in self.getActions(state), (
             "Invalid action passed to getActionCost().")
         x, y = state[0]
         dx, dy = Actions.directionToVector(action)
         nextx, nexty = int(x + dx), int(y + dy)
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        # == Reduce functional ! ==
+        # Para cada corner, verifica se a posição atual do
+        # pacman coincide, caso seja verdadeiro,
+        # Cria uma nova tupla sem essa posição
+        reduce_unvisited_corners = tuple(i for i in state[1] if i != state[0])
+        # util.raiseNotDefined()
         # you will need to replace the None part of the following tuple.
-        return ((nextx, nexty), None)
+        return ((nextx, nexty), reduce_unvisited_corners)
 
     def getCostOfActionSequence(self, actions):
         """
+        -: Função de custo de caminho
+
         Returns the cost of a particular sequence of actions.  If those actions
         include an illegal move, return 999999.  This is implemented for you.
         """
@@ -426,12 +455,18 @@ def cornersHeuristic(state, problem):
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible (as well as consistent).
     """
-    corners = problem.corners  # These are the corner coordinates
+    corners = state[1]  # problem.corners  # These are the corner coordinates
+    # print(state)
     # These are the walls of the maze, as a Grid (game.py)
     walls = problem.walls
 
     "*** YOUR CODE HERE ***"
-    return 0  # Default to trivial solution
+    # return 0  # Default to trivial solution
+    xy1 = state[0]  # problem.position
+    distances = []
+    for xy2 in corners:
+        distances.append(abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1]))
+    return max(distances)
 
 
 class AStarCornersAgent(SearchAgent):
@@ -466,6 +501,9 @@ class FoodSearchProblem:
 
     def isGoalState(self, state):
         return state[1].count() == 0
+
+    def getGameState(self):
+        return self.startingGameState
 
     def expand(self, state):
         "Returns child states, the actions they require, and a cost of 1."
@@ -556,10 +594,68 @@ def foodHeuristic(state, problem):
     Subsequent calls to this heuristic can access
     problem.heuristicInfo['wallCount']
     """
+    
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+    foodList = foodGrid.asList()
+    heuristic = 0
+    
+    if len(foodList) == 0:
+        return 0
+    
+    if len(foodList) == 0:
+        return None
 
+    closestFood = foodList[0]
+    closestCost = manhatan(position, closestFood)
+    for candidate in foodList[1:]:
+        thisCost = manhatan(position, candidate)
+        if thisCost < closestCost:
+            closestCost = thisCost
+            closestFood = candidate
+
+    if len(foodList) == 0:
+        return None
+
+    farthestFood = foodList[0]
+    farthestCost = manhatan(position, farthestFood)
+    for candidate in foodList[1:]:
+        thisCost = manhatan(position, candidate)
+        if thisCost > farthestCost:
+            farthestCost = thisCost
+            farthestFood = candidate
+
+    heuristic = manhatan(closestFood, position)
+    heuristic = heuristic + manhatan(farthestFood, closestFood)
+
+    gameState = problem.getGameState()
+    d1 = mazeDistance(closestFood, position, gameState)
+    
+    leftPoints = 0
+    for (x,y) in foodList:
+        flag = 0
+        if x!=farthestFood[0] and x!=closestFood[0]:
+            leftPoints = leftPoints + 1
+            flag = 1
+        
+        if flag == 0:
+            if y!=farthestFood[1] and y!=closestFood[1]:
+                leftPoints = leftPoints + 1
+
+    leftPoints2 = 0
+    for (x,y) in foodList:
+        flag = 0
+        if x!=position[0] and x!=closestFood[0]:
+            leftPoints2 = leftPoints2 + 1
+            flag = 1
+        
+        if flag == 0:
+            if y!=position[1] and y!=closestFood[1]:
+                leftPoints2 = leftPoints2 + 1
+    
+    return d1 + leftPoints2
+
+def manhatan (pointA, pointB):
+    return abs(pointA[0] - pointB[0]) + abs(pointA[1] - pointB[1])
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -593,7 +689,8 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        print("Food Num:{0}".format(food.count()))
+        return search.bfs(problem)
 
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -628,9 +725,11 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         complete the problem definition.
         """
         x, y = state
+        return self.food[x][y]
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        # util.raiseNotDefined()
+        
 
 
 def mazeDistance(point1, point2, gameState):

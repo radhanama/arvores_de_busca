@@ -3,12 +3,13 @@ import random
 
 # Module Classes
 
+
 class TwoJarsState:
     """
     This class represents a configuration of the two jars.
     """
 
-    def __init__( self, capacitys ):
+    def __init__(self, capacitys):
         """
           Constructs a new configuration.
 
@@ -20,7 +21,7 @@ class TwoJarsState:
         """
         self.jars = (capacitys[0], capacitys[1])
 
-    def isGoal( self ):
+    def isGoal(self):
         """
           Checks to see if the pair of jars is in its goal state.
 
@@ -37,10 +38,13 @@ class TwoJarsState:
         >>> TwoJarsState((1, 0)).isGoal()
         False
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        "*** YOUR CODE"
+        x, y = self.jars
+        if x == 2:
+            return True
+        return False
 
-    def legalMoves( self ):
+    def legalMoves(self):
         """
           Returns a list of legal actions from the current state.
 
@@ -51,14 +55,30 @@ class TwoJarsState:
         - pourJ4intoJ3 (despejar J4 em J3)
         - emptyJ3 (esvaziar J3)
         - emptyJ4 (esvaziar 43)
-        
+
         These are encoded as strings: 'fillJ3', 'fillJ4', 'pourJ3intoJ4', 'pourJ4intoJ3', 'emptyJ3', 'emptyJ4'.
 
         >>> TwoJarsState((1, 3)).legalMoves()
         ['fillJ4', 'pourJ3intoJ4', 'emptyJ3', 'emptyJ4']
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        "*** YOUR CODE"
+        moves = []
+        x, y = self.jars
+        if y>0:
+            moves.append('emptyJ3')
+            if x+y <= 4:
+                moves.append('pourJ3intoJ4')
+        if y<3:
+             moves.append('fillJ3')
+            
+        if x>0:
+            moves.append('emptyJ4')
+            if x+y <= 3:
+                moves.append('pourJ4intoJ3')
+        if y<3:
+             moves.append('fillJ4')
+        return moves
+        
 
     def result(self, move):
         """
@@ -72,7 +92,7 @@ class TwoJarsState:
         it returns a new object.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.jars
 
     # Utilities for comparison and display
     def __eq__(self, other):
@@ -85,7 +105,7 @@ class TwoJarsState:
           True
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return True
 
     def __hash__(self):
         return hash(str(self.jars))
@@ -95,11 +115,10 @@ class TwoJarsState:
           Returns a display string for the maze
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return str(self.jars)
 
     def __str__(self):
         return self.__getAsciiString()
-
 
 
 class TwoJarsSearchProblem(search.SearchProblem):
@@ -108,6 +127,7 @@ class TwoJarsSearchProblem(search.SearchProblem):
 
       Each state is represented by an instance of an TwoJarsState.
     """
+
     def __init__(self, start_state):
         "Creates a new TwoJarsSearchProblem which stores search information."
         self.start_state = start_state
@@ -115,10 +135,10 @@ class TwoJarsSearchProblem(search.SearchProblem):
     def getStartState(self):
         return start_state
 
-    def isGoalState(self,state):
+    def isGoalState(self, state):
         return state.isGoal()
 
-    def expand(self,state):
+    def expand(self, state):
         """
           Returns list of (child, action, stepCost) pairs where
           each child is either left, right, up, or down
@@ -127,7 +147,8 @@ class TwoJarsSearchProblem(search.SearchProblem):
         child = []
         for a in self.getActions(state):
             next_state = self.getNextState(state, a)
-            child.append((next_state, a, self.getActionCost(state, a, next_state)))
+            child.append(
+                (next_state, a, self.getActionCost(state, a, next_state)))
         return child
 
     def getActions(self, state):
@@ -152,6 +173,7 @@ class TwoJarsSearchProblem(search.SearchProblem):
         """
         return len(actions)
 
+
 def createRandomTwoJarsState(moves=10):
     """
       moves: number of random moves to apply
@@ -159,12 +181,13 @@ def createRandomTwoJarsState(moves=10):
       Creates a random state by applying a series 
       of 'moves' random moves to a solved state.
     """
-    volume_of_J3 = randint(0, 4)
-    a_state = TwoJarsState((2,volume_of_J3))
+    volume_of_J3 = random.randint(0, 4)
+    a_state = TwoJarsState((2, volume_of_J3))
     for i in range(moves):
         # Execute a random legal move
         a_state = a_state.result(random.sample(a_state.legalMoves(), 1)[0])
     return a_state
+
 
 if __name__ == '__main__':
     start_state = createRandomTwoJarsState(8)
@@ -178,7 +201,7 @@ if __name__ == '__main__':
     i = 1
     for a in path:
         curr = curr.result(a)
-        print('After %d move%s: %s' % (i, ("", "s")[i>1], a))
+        print('After %d move%s: %s' % (i, ("", "s")[i > 1], a))
         print(curr)
 
         input("Press return for the next state...")   # wait for key stroke

@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -17,6 +17,7 @@ In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
 
+import time
 import util
 
 class SearchProblem:
@@ -97,7 +98,32 @@ def tinyMazeSearch(problem):
     from game import Directions
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
+
+def getActionSequence(node):
+    actions = []
+
+    while node['PATH-COST'] > 0:
+        actions.insert(0, node['ACTION'])
+        node = node['PARENT']
+
+    return actions
+
+
+def getStartNode(problem):
+    node = {'STATE': problem.getStartState(), 'PATH-COST': 0}
+    return node
+
+
+def getChildNode(sucessor, parent_node):
+    child_node = {'STATE': sucessor[0],
+                  'ACTION': sucessor[1],
+                  'PARENT': parent_node,
+                  'PATH-COST': parent_node['PATH-COST'] + sucessor[2]}
+
+    return child_node
+
 
 def depthFirstSearch(problem):
     """
@@ -109,16 +135,86 @@ def depthFirstSearch(problem):
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
 
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
+    print "Start:", problem.getStartState()
+    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
+    print "Start's successors:", problem.expand(problem.getStartState())
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    node = getStartNode(problem)
+    frontier = util.Stack()
+    frontier.push(node)
+
+    closed = set()
+
+    while not frontier.isEmpty():
+
+        node = frontier.pop()
+
+        if node['STATE'] in closed:
+            continue
+
+        closed.add(node['STATE'])
+
+        if problem.isGoalState(node['STATE']):
+            return getActionSequence(node)
+
+        for sucessor in problem.expand(node['STATE']):
+            child_node = getChildNode(sucessor, node)
+            frontier.push(child_node)
+    return []
+
+
+def uniformCostSearch(problem):
+    """Search the node of least total cost first."""
+    node = getStartNode(problem)
+    def fn_total_cost_for_node(a_node): return a_node['PATH-COST']
+
+    frontier = util.PriorityQueueWithFunction(fn_total_cost_for_node)
+
+    frontier.push(node)
+
+    explored = set()
+
+    while not frontier.isEmpty():
+        node = frontier.pop()
+        if problem.isGoalState(node["STATE"]):
+            return getActionSequence(node)
+
+        if node['STATE'] not in explored:
+            explored.add(node['STATE'])
+            successors = problem.getSuccessors(node['STATE'])
+            for sucessor in successors:
+                child_node = getChildNode(successors, node)
+                frontier.push(child_node)
+
+    return None
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    node = getStartNode(problem)
+
+    frontier = util.Queue()
+    closed = set()
+
+    # frontier.push(node)
+    # node = frontier.pop()
+
+    while not problem.isGoalState(node['STATE']):
+
+        if not node['STATE'] in closed:
+            closed.add(node['STATE'])
+            childrens_states = problem.expand(node['STATE'])
+
+            for children_state in childrens_states:
+                children_node = getChildNode(children_state, node)
+                frontier.push(children_node)
+
+        node = frontier.pop()
+
+    return getActionSequence(node)
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -127,13 +223,72 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    node = getStartNode(problem)
+    
+    def fn_total_cost_for_node(a_node):
+        return a_node['PATH-COST'] + heuristic(a_node['STATE'], problem=problem)
+
+    frontier = util.PriorityQueueWithFunction(fn_total_cost_for_node)
+    frontier.push(node)
+    explored = set()
+
+    while not frontier.isEmpty():
+        node = frontier.pop()
+
+        if node['STATE'] in explored:
+            continue
+
+        explored.add(node['STATE'])
+
+        if problem.isGoalState(node['STATE']):
+            return getActionSequence(node)
+
+        successors = problem.expand(node['STATE'])
+
+        for sucessor in successors:
+            child_node = getChildNode(sucessor, node)
+            frontier.push(child_node)
+
+    return []
+
+
+def greadySearch(problem, heuristic=nullHeuristic):
+    """Search the node that has the lowest combined cost and heuristic first."""
+    node = getStartNode(problem)
+
+    def fn_total_cost_for_node(a_node):
+        return heuristic(a_node['STATE'], problem=problem)
+
+    frontier = util.PriorityQueueWithFunction(fn_total_cost_for_node)
+    frontier.push(node)
+    explored = set()
+
+    while not frontier.isEmpty():
+        node = frontier.pop()
+
+        if node['STATE'] in explored:
+            continue
+
+        explored.add(node['STATE'])
+
+        if problem.isGoalState(node['STATE']):
+            return getActionSequence(node)
+
+        successors = problem.expand(node['STATE'])
+
+        for sucessor in successors:
+            child_node = getChildNode(sucessor, node)
+            frontier.push(child_node)
+
+    return []
 
 
 # Abbreviations
 bfs = breadthFirstSearch
 dfs = depthFirstSearch
 astar = aStarSearch
+gready = greadySearch
+def ucs(problem): return aStarSearch(problem, nullHeuristic)
