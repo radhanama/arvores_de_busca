@@ -667,8 +667,7 @@ class ClosestDotSearchAgent(SearchAgent):
 
         "*** YOUR CODE HERE ***"
         print("Food Num:{0}".format(food.count()))
-        return search.bfs(problem)
-
+        return search.aStarSearch(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """

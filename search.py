@@ -194,26 +194,27 @@ def breadthFirstSearch(problem):
     "*** YOUR CODE HERE ***"
 
     node = getStartNode(problem)
-
     frontier = util.Queue()
+    frontier.push(node)
+
     closed = set()
 
-    # frontier.push(node)
-    # node = frontier.pop()
-
-    while not problem.isGoalState(node['STATE']):
-
-        if not node['STATE'] in closed:
-            closed.add(node['STATE'])
-            childrens_states = problem.expand(node['STATE'])
-
-            for children_state in childrens_states:
-                children_node = getChildNode(children_state, node)
-                frontier.push(children_node)
-
+    while not frontier.isEmpty():
         node = frontier.pop()
 
-    return getActionSequence(node)
+        if node['STATE'] in closed:
+            continue
+
+        closed.add(node['STATE'])
+
+        if problem.isGoalState(node['STATE']):
+            return getActionSequence(node)
+
+        for sucessor in problem.expand(node['STATE']):
+            child_node = getChildNode(sucessor, node)
+            frontier.push(child_node)
+
+    return []
 
 
 def nullHeuristic(state, problem=None):
