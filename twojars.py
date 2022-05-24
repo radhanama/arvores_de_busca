@@ -38,11 +38,8 @@ class TwoJarsState:
         >>> TwoJarsState((1, 0)).isGoal()
         False
         """
-        "*** YOUR CODE"
-        x, y = self.jars
-        if x == 2:
-            return True
-        return False
+        "*** YOUR CODE HERE ***"
+        return self.jars[0] == 2
 
     def legalMoves(self):
         """
@@ -61,7 +58,7 @@ class TwoJarsState:
         >>> TwoJarsState((1, 3)).legalMoves()
         ['fillJ4', 'pourJ3intoJ4', 'emptyJ3', 'emptyJ4']
         """
-        "*** YOUR CODE"
+        "*** YOUR CODE HERE ***"
         moves = []
         j4, j3 = self.jars
         if j3 != 0:
@@ -91,27 +88,32 @@ class TwoJarsState:
         it returns a new object.
         """
         "*** YOUR CODE HERE ***"
+
         novo = TwoJarsState(self.jars)
-        x, y = novo.jars
-        if move == "fillJ4":
-            novo.jars = (4, y)
-        elif move == "fillJ3":
-            novo.jars = (x, 3)
-        elif move == "emptyJ4":
-            novo.jars = (0, y)
-        elif move == "emptyJ3":
-            novo.jars = (x, 0)
-        elif move == "pourJ3intoJ4" and x+y <= 4:
-            novo.jars = (x+y, 0)
-        elif move == "pourJ4intoJ3" and x+y <= 3:
-            novo.jars = (0, y+x)
-        elif move == "pourJ4intoJ3" and y < 3:
-            novo.jars = (x+y-4, 3)
-        elif move == "pourJ3intoJ4" and x < 4:
-            novo.jars = (4, x+y-3)
-        return novo
+        j3, j4 = novo.jars
+
+        if move in self.legalMoves():
+            if move == 'fillJ4':
+                return TwoJarsState((4, j4))
+            if move == 'fillJ3':
+                return TwoJarsState((j4, 3))
+            if move == 'emptyJ4':
+                return TwoJarsState((0, j3))
+            if move == 'emptyJ3':
+                return TwoJarsState((j4, 0))
+            if move == 'pourJ3intoJ4':
+                if j3+j4 <= 4:
+                    return TwoJarsState((4, 0))
+                if j3+j4 > 4:
+                    return TwoJarsState((4, j4 + j3 - 4))
+            if move == 'pourJ4intoJ3':
+                if j3+j4 <= 3:
+                    return TwoJarsState((0, 3))
+                if j3+j4 > 3:
+                    return TwoJarsState((j4 + j3 - 3, 3))
 
     # Utilities for comparison and display
+
     def __eq__(self, other):
         """
             Overloads '==' such that two pairs of jars with the same volume of water
@@ -121,7 +123,7 @@ class TwoJarsState:
               TwoJarsState((1, 0)).result('left')
           True
         """
-        "*** YOUR CODE"
+        "*** YOUR CODE HERE ***"
         # if self.jars[0] == other.jars[1] and self.jars[1] == other.jars[0]:
         #     return True
         if self.jars[0] == other.jars[0] and self.jars[1] == other.jars[1]:
@@ -136,7 +138,7 @@ class TwoJarsState:
           Returns a display string for the maze
         """
         "*** YOUR CODE HERE ***"
-        return str(self.jars)
+        return f'"J4" has volume {self.jars[0]} and "J3" has volume {self.jars[1]}'
 
     def __str__(self):
         return self.__getAsciiString()

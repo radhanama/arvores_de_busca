@@ -38,6 +38,7 @@ from game import Directions
 from game import Agent
 from game import Actions
 import util
+from util import manhattanDistance
 import time
 import search
 import functools
@@ -600,23 +601,23 @@ def foodHeuristic(state, problem):
         return 0
 
     closestFood = foodList[0]
-    closestCost = manhatan(position, closestFood)
+    closestCost = manhattanDistance(position, closestFood)
     for candidate in foodList[1:]:
-        thisCost = manhatan(position, candidate)
+        thisCost = manhattanDistance(position, candidate)
         if thisCost < closestCost:
             closestCost = thisCost
             closestFood = candidate
 
     farthestFood = foodList[0]
-    farthestCost = manhatan(position, farthestFood)
+    farthestCost = manhattanDistance(position, farthestFood)
     for candidate in foodList[1:]:
-        thisCost = manhatan(position, candidate)
+        thisCost = manhattanDistance(position, candidate)
         if thisCost > farthestCost:
             farthestCost = thisCost
             farthestFood = candidate
 
-    heuristic = manhatan(closestFood, position)
-    heuristic = heuristic + manhatan(farthestFood, closestFood)
+    heuristic = manhattanDistance(closestFood, position)
+    heuristic = heuristic + manhattanDistance(farthestFood, closestFood)
 
     gameState = problem.startingGameState
     d1 = mazeDistance(closestFood, position, gameState)
@@ -630,9 +631,6 @@ def foodHeuristic(state, problem):
                 leftPoints = leftPoints + 1
     
     return d1 + leftPoints
-
-def manhatan (first, second):
-    return abs(first[0] - second[0]) + abs(first[1] - second[1])
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
