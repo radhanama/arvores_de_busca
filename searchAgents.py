@@ -608,17 +608,6 @@ def foodHeuristic(state, problem):
             closestCost = thisCost
             closestFood = candidate
 
-    farthestFood = foodList[0]
-    farthestCost = manhattanDistance(position, farthestFood)
-    for candidate in foodList[1:]:
-        thisCost = manhattanDistance(position, candidate)
-        if thisCost > farthestCost:
-            farthestCost = thisCost
-            farthestFood = candidate
-
-    heuristic = manhattanDistance(closestFood, position)
-    heuristic = heuristic + manhattanDistance(farthestFood, closestFood)
-
     gameState = problem.startingGameState
     d1 = mazeDistance(closestFood, position, gameState)
 
