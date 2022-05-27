@@ -595,7 +595,6 @@ def foodHeuristic(state, problem):
     
     position, foodGrid = state
     foodList = foodGrid.asList()
-    heuristic = 0
     
     if len(foodList) == 0:
         return 0

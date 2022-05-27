@@ -1,15 +1,15 @@
+import math
 import search
 import random
 
 # Module Classes
-
 
 class TwoJarsState:
     """
     This class represents a configuration of the two jars.
     """
 
-    def __init__(self, capacitys):
+    def __init__( self, capacitys ):
         """
           Constructs a new configuration.
 
@@ -21,7 +21,7 @@ class TwoJarsState:
         """
         self.jars = (capacitys[0], capacitys[1])
 
-    def isGoal(self):
+    def isGoal( self ):
         """
           Checks to see if the pair of jars is in its goal state.
 
@@ -41,7 +41,7 @@ class TwoJarsState:
         "*** YOUR CODE HERE ***"
         return self.jars[0] == 2
 
-    def legalMoves(self):
+    def legalMoves( self ):
         """
           Returns a list of legal actions from the current state.
 
@@ -52,7 +52,7 @@ class TwoJarsState:
         - pourJ4intoJ3 (despejar J4 em J3)
         - emptyJ3 (esvaziar J3)
         - emptyJ4 (esvaziar 43)
-
+        
         These are encoded as strings: 'fillJ3', 'fillJ4', 'pourJ3intoJ4', 'pourJ4intoJ3', 'emptyJ3', 'emptyJ4'.
 
         >>> TwoJarsState((1, 3)).legalMoves()
@@ -60,20 +60,19 @@ class TwoJarsState:
         """
         "*** YOUR CODE HERE ***"
         moves = []
-        j4, j3 = self.jars
-        if j3 != 0:
+        current_state =self.jars
+        if current_state[0] < 4:
+            moves.append("fillJ4")
+        if current_state[0] > 0:
+            moves.append("emptyJ4")
+        if  current_state[0] > 0 and current_state[1] < 3:
+            moves.append("pourJ4intoJ3")
+        if current_state[1] < 3:
+            moves.append("fillJ3")
+        if current_state[1] > 0:
             moves.append('emptyJ3')
-            if j4 < 4:
-                moves.append('pourJ3intoJ4')
-        if j3 < 3:
-            moves.append('fillJ3')
-
-        if j4 > 0:
-            moves.append('emptyJ4')
-            if j3 < 3:
-                moves.append('pourJ4intoJ3')
-        if j4 < 4:
-            moves.append('fillJ4')
+        if current_state[1] > 0 and current_state[0] < 4:
+            moves.append('pourJ3intoJ4')
         return moves
 
     def result(self, move):
@@ -88,13 +87,10 @@ class TwoJarsState:
         it returns a new object.
         """
         "*** YOUR CODE HERE ***"
-
-        novo = TwoJarsState(self.jars)
-        j3, j4 = novo.jars
-
+        j4,j3 = self.jars
         if move in self.legalMoves():
             if move == 'fillJ4':
-                return TwoJarsState((4, j4))
+                return TwoJarsState((4, j3))
             if move == 'fillJ3':
                 return TwoJarsState((j4, 3))
             if move == 'emptyJ4':
@@ -102,15 +98,17 @@ class TwoJarsState:
             if move == 'emptyJ3':
                 return TwoJarsState((j4, 0))
             if move == 'pourJ3intoJ4':
-                if j3+j4 <= 4:
-                    return TwoJarsState((4, 0))
-                if j3+j4 > 4:
-                    return TwoJarsState((4, j4 + j3 - 4))
+                resto = 4 - j4
+                if resto <= j3:
+                    return TwoJarsState((4,j3-resto))
+                if resto > j3:
+                    return TwoJarsState((j4+ resto,0))
             if move == 'pourJ4intoJ3':
-                if j3+j4 <= 3:
-                    return TwoJarsState((0, 3))
-                if j3+j4 > 3:
-                    return TwoJarsState((j4 + j3 - 3, 3))
+                resto = 3 - j3
+                if resto <= j4:
+                    return TwoJarsState((j4-resto,j3+ resto))
+                if resto > j4:
+                    return TwoJarsState((0,j3+ j4))
 
     # Utilities for comparison and display
 
@@ -124,11 +122,7 @@ class TwoJarsState:
           True
         """
         "*** YOUR CODE HERE ***"
-        # if self.jars[0] == other.jars[1] and self.jars[1] == other.jars[0]:
-        #     return True
-        if self.jars[0] == other.jars[0] and self.jars[1] == other.jars[1]:
-            return True
-        return False
+        return self.jars[0] + self.jars[1] == other.jars[0] + other.jars[1]
 
     def __hash__(self):
         return hash(str(self.jars))
@@ -144,13 +138,13 @@ class TwoJarsState:
         return self.__getAsciiString()
 
 
+
 class TwoJarsSearchProblem(search.SearchProblem):
     """
       Implementation of a SearchProblem for the Two Jars domain
 
       Each state is represented by an instance of an TwoJarsState.
     """
-
     def __init__(self, start_state):
         "Creates a new TwoJarsSearchProblem which stores search information."
         self.start_state = start_state
@@ -158,10 +152,10 @@ class TwoJarsSearchProblem(search.SearchProblem):
     def getStartState(self):
         return start_state
 
-    def isGoalState(self, state):
+    def isGoalState(self,state):
         return state.isGoal()
 
-    def expand(self, state):
+    def expand(self,state):
         """
           Returns list of (child, action, stepCost) pairs where
           each child is either left, right, up, or down
@@ -170,8 +164,7 @@ class TwoJarsSearchProblem(search.SearchProblem):
         child = []
         for a in self.getActions(state):
             next_state = self.getNextState(state, a)
-            child.append(
-                (next_state, a, self.getActionCost(state, a, next_state)))
+            child.append((next_state, a, self.getActionCost(state, a, next_state)))
         return child
 
     def getActions(self, state):
@@ -196,7 +189,6 @@ class TwoJarsSearchProblem(search.SearchProblem):
         """
         return len(actions)
 
-
 def createRandomTwoJarsState(moves=10):
     """
       moves: number of random moves to apply
@@ -204,13 +196,12 @@ def createRandomTwoJarsState(moves=10):
       Creates a random state by applying a series 
       of 'moves' random moves to a solved state.
     """
-    volume_of_J3 = random.randint(0, 4)
-    a_state = TwoJarsState((2, volume_of_J3))
+    volume_of_J3 = random.randint(0,3)
+    a_state = TwoJarsState((2,volume_of_J3))
     for i in range(moves):
         # Execute a random legal move
         a_state = a_state.result(random.sample(a_state.legalMoves(), 1)[0])
     return a_state
-
 
 if __name__ == '__main__':
     start_state = createRandomTwoJarsState(8)
@@ -224,7 +215,7 @@ if __name__ == '__main__':
     i = 1
     for a in path:
         curr = curr.result(a)
-        print('After %d move%s: %s' % (i, ("", "s")[i > 1], a))
+        print('After %d move%s: %s' % (i, ("", "s")[i>1], a))
         print(curr)
 
         input("Press return for the next state...")   # wait for key stroke
